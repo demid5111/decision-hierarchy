@@ -1,0 +1,2 @@
+class MQConstants():
+    pass

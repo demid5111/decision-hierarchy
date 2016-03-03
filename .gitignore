@@ -28,3 +28,4 @@
 *.app
 
 .idea/**/*.xml
+__pycache__/
