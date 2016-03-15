@@ -1,5 +1,9 @@
 import random
 
+import pika
+
+from supporting.mq_constants import MQConstants
+
 
 class Expert():
     def __init__(self,name):
@@ -26,6 +30,23 @@ class Expert():
         assert options, "Options should not be empty"
         self.options = options
 
+    def init_as_emitter(self):
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(
+                host='localhost'))
+        self.channel = self.connection.channel()
+
+        self.channel.exchange_declare(exchange=MQConstants.data_back_flow,
+                                 type=MQConstants.fanout)
+
+        message = 'Hi, Big Bro!'
+        self.channel.basic_publish(exchange=MQConstants.data_back_flow,
+                                   routing_key='',
+                              body=message)
+        print(" [x] Sent %r" % (message))
+
+    def close_connection(self):
+        self.connection.close()
+
 
 if __name__ == '__main__':
     print('Starting to initialize the expert')
@@ -36,3 +57,6 @@ if __name__ == '__main__':
     e.set_alternatives(alt)
     e.calculate_estimates()
     print(e.get_estimates())
+
+    e.init_as_emitter()
+    e.close_connection()

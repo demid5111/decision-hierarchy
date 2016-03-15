@@ -18,18 +18,6 @@ class DecisionMaker:
         self.estimates_map_reverse = {} #2:"good
         self.matrix = [] # here we put calculated two-tuples for the raw data from experts
 
-
-    def _init_as_receiver(self):
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(
-                host=self.host))
-        self.channel = self.connection.channel()
-
-        self.channel.exchange_declare(exchange='topic_logs',
-                                 type='topic')
-
-        result = self.channel.queue_declare(exclusive=True)
-        queue_name = result.method.queue
-
     def define_estimate_options(self):
         self.options = ["bad","satisfactory","good","excellent"]
 
