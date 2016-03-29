@@ -154,14 +154,14 @@ class DataSender():
         self.result2 = self.channel2.queue_declare(exclusive=True, durable=True)
         self.queue_name2 = self.result2.method.queue
         self.routing_key = ""
-        self.channel2.exchange_declare(exchange=MQConstants.fanoutExchangeFromAdmin,
-                                      type='fanout')
+        self.channel2.exchange_declare(exchange=MQConstants.topicExchangeFromAdmin,
+                                      type='topic')
 
         if self.ID >= 0:
-            route_key = "{}.*.*".format(self.ID)
+            route_key = "{}.*".format(self.ID)
         else:
             route_key = MQConstants.routing_key_from_admin
-        self.channel2.queue_bind(exchange=MQConstants.fanoutExchangeFromAdmin, queue=self.queue_name2,
+        self.channel2.queue_bind(exchange=MQConstants.topicExchangeFromAdmin, queue=self.queue_name2,
                                 routing_key=route_key)
         print("[*] Waiting for messages...")
 

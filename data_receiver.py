@@ -138,16 +138,16 @@ if __name__ == '__main__':
 
     print("Experts were created! Ready to go!")
 
-    message = json.dumps({"my_task":"new_task"})
+    message = json.dumps({"my_task0":"new_task"})
 
-    receiver.channel.basic_publish(exchange=MQConstants.fanoutExchangeFromAdmin,
-                               routing_key="0.sd.sd",
+    receiver.channel.basic_publish(exchange=MQConstants.topicExchangeFromAdmin,
+                               routing_key="0.ff",
                                properties=pika.BasicProperties(type="task", delivery_mode=2),
                                body=message)
 
-    message = json.dumps({"my_task":"new_task"})
-    receiver.channel.basic_publish(exchange=MQConstants.fanoutExchangeFromAdmin,
-                               routing_key="1.sd.sd",
+    message = json.dumps({"my_task1":"new_task"})
+    receiver.channel.basic_publish(exchange=MQConstants.topicExchangeFromAdmin,
+                               routing_key="1.ff",
                                properties=pika.BasicProperties(type="task", delivery_mode=2),
                                body=message)
 
