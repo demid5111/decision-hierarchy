@@ -138,17 +138,19 @@ if __name__ == '__main__':
 
     print("Experts were created! Ready to go!")
 
-    message = json.dumps({"my_task0":"new_task"})
 
-    receiver.channel.basic_publish(exchange=MQConstants.topicExchangeFromAdmin,
-                               routing_key="0.ff",
-                               properties=pika.BasicProperties(type="task", delivery_mode=2),
-                               body=message)
+    for i in range(receiver.NUM_EXPERTS):
+        message = json.dumps({"my_task": "new_task"})
 
-    message = json.dumps({"my_task1":"new_task"})
-    receiver.channel.basic_publish(exchange=MQConstants.topicExchangeFromAdmin,
-                               routing_key="1.ff",
-                               properties=pika.BasicProperties(type="task", delivery_mode=2),
-                               body=message)
+        receiver.channel.basic_publish(exchange=MQConstants.topicExchangeFromAdmin,
+                                       routing_key=str(i)+".get_scales",
+                                       properties=pika.BasicProperties(type="task", delivery_mode=2),
+                                       body=message)
 
+    print("Wait until I get enough responds")
 
+    while True:
+        if receiver.is_network_ready():
+            break
+
+    receiver.erase_readiness()

@@ -1,7 +1,7 @@
 import unittest
 
-from decision_maker import DecisionMaker
 from two_tuple import TwoTuple
+from two_tuple.decision_maker import DecisionMaker
 
 class TwoTupleTest(unittest.TestCase):
     def test_sorting(self):

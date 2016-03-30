@@ -12,6 +12,7 @@ class MQConstants():
     message_key = "msg"
 
 class Message():
+    kill_everyone = None
     info = "info"
     new_member = "new_member"
     new_id = "new_id"

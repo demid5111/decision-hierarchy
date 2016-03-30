@@ -13,12 +13,12 @@ class DataSender():
         self.channel = self.connection.channel()
         self.result = self.channel.queue_declare(exclusive=True, durable=True)
         self.queue_name = self.result.method.queue
-        self.routing_key = "routing_key" #'.'.join([str(self.ID), "report", "update_energy"])
+        self.routing_key = "routing_key"  # '.'.join([str(self.ID), "report", "update_energy"])
 
         try:
             self.ID
         except AttributeError:
-            data = {Message.new_member:""}
+            data = {Message.new_member: ""}
             self.send_message(message=data, routing_key=Message.new_member)
         else:
             self.ID = int(1)
@@ -38,8 +38,8 @@ class DataSender():
         print("[*] Sending Task: " + str(message))
 
         try:
-            message[Message.info] = "[{}] {}".format(str(self.ID),message[Message.info])
-        except (ValueError,AttributeError):
+            message[Message.info] = "[{}] {}".format(str(self.ID), message[Message.info])
+        except (ValueError, AttributeError,TypeError):
             pass
         message = json.dumps(message)
         self.channel.exchange_declare(exchange=MQConstants.directExchangeToAdmin,
@@ -49,7 +49,7 @@ class DataSender():
                                    properties=pika.BasicProperties(type="task", delivery_mode=1),
                                    body=message)
 
-    def begin_listen(self, queue_name,route_key=None):
+    def begin_listen(self, queue_name, route_key=None):
         """
         Makes this instance (agent) listen to the messages from the broker
         :param queue_name:
@@ -87,31 +87,25 @@ class DataSender():
 
         try:
             data = json.loads(body)
-            if (data.get(Message.new_id,-1) > -1):
-                self.ID = data.get(Message.new_id,0)
+            if (data.get(Message.new_id, -1) > -1):
+                self.ID = data.get(Message.new_id, 0)
                 print("Wow, new id: " + str(self.ID))
                 self.channel.stop_consuming()
                 self.change_routing_key()
-            # then it is the switch by the message
-            # if data[MQConstants.message_key] == Message.initializing:  # initializing with weights and states
             print("In receiving info " + str(data))
         except ValueError:
             if Message.new_id in body:
                 if self.ID == -1:
                     self.ID = body.split()[-1]
-                    print ("My ID: " + str(self.ID))
+                    print("My ID: " + str(self.ID))
                     message = pack_msg_json(level=Level.info)
                     self.send_message(message=message, routing_key=self.make_routing_key(" ", "info"))
                 return
             elif Message.kill_everyone in body:
                 print("Bye!")
                 sys.exit(0)
-            # else:
-            #     self.send_message(message="Got it! TODO: " + body, routing_key=Message.initializing)
 
-
-    def receive_message2(self, ch, method, properties, body):
-
+    def receive_topic_messages(self, ch, method, properties, body):
         """
         Standard interface for the pika module for the agent to get messages
         :param ch:
@@ -125,27 +119,22 @@ class DataSender():
             print("Hey, Admin!")
 
         try:
-            data = json.loads(body)
-            if (data.get(Message.new_id,-1) > -1):
-                self.ID = data.get(Message.new_id,0)
-                print("Wow2, new id: " + str(self.ID))
-                self.change_routing_key()
-            # then it is the switch by the message
-            # if data[MQConstants.message_key] == Message.initializing:  # initializing with weights and states
-            print("Special!!!!!!!!!!!!!" + str(data))
-        except ValueError:
-            if Message.new_id in body:
-                if self.ID == -1:
-                    self.ID = body.split()[-1]
-                    print ("My ID: " + str(self.ID))
-                    message = pack_msg_json(level=Level.info)
+            command = method.routing_key.split('.')
+            if not command:
+                data = json.loads(body)
+                print("My special task: " + str(data))
+            elif len(command):
+                if command[1] == "get_scales":
+                    print("Preparing and sending my scales")
+                    message = pack_msg_json(level=Level.info,body={"scale":['A','B','C']})
                     self.send_message(message=message, routing_key=self.make_routing_key(" ", "info"))
-                return
-            elif Message.kill_everyone in body:
+            elif command[1] == "get_estimates":
+                    print("Preparing and sending my estimates")
+
+        except ValueError:
+            if Message.kill_everyone in body:
                 print("Bye!")
-                sys.exit(0)
-            # else:
-            #     self.send_message(message="Got it! TODO: " + body, routing_key=Message.initializing)
+                sys.exit(-1)
 
     def change_routing_key(self):
         self.channel.stop_consuming()
@@ -153,19 +142,18 @@ class DataSender():
         self.channel2 = self.connection2.channel()
         self.result2 = self.channel2.queue_declare(exclusive=True, durable=True)
         self.queue_name2 = self.result2.method.queue
-        self.routing_key = ""
         self.channel2.exchange_declare(exchange=MQConstants.topicExchangeFromAdmin,
-                                      type='topic')
+                                       type='topic')
 
         if self.ID >= 0:
-            route_key = "{}.*".format(self.ID)
+            self.routing_key = "{}.*".format(self.ID)
         else:
-            route_key = MQConstants.routing_key_from_admin
+            self.routing_key = MQConstants.routing_key_from_admin
         self.channel2.queue_bind(exchange=MQConstants.topicExchangeFromAdmin, queue=self.queue_name2,
-                                routing_key=route_key)
+                                 routing_key=self.routing_key)
         print("[*] Waiting for messages...")
 
-        self.channel2.basic_consume(self.receive_message2, queue=self.queue_name2, no_ack=False)
+        self.channel2.basic_consume(self.receive_topic_messages, queue=self.queue_name2, no_ack=False)
 
         self.channel2.start_consuming()
 
