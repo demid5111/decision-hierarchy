@@ -1,12 +1,10 @@
+import abc
 import random
-
-import pika
-
-from supporting.primitives import print_list, print_dictionary
-from two_tuple import TwoTuple
+import sys
+from .two_tuple import TwoTuple
 
 
-class DecisionMaker:
+class Decisioner:
     NUM_ALTERNATIVES = 4
     NUM_EXPERTS = 4
 
@@ -19,33 +17,29 @@ class DecisionMaker:
         self.estimates_map_reverse = {}  # 2:"good
         self.matrix = []  # here we put calculated two-tuples for the raw data from experts
 
+    @abc.abstractmethod
     def define_estimate_options(self):
-        self.options = ["bad", "satisfactory", "good", "excellent"]
+        return NotImplementedError
 
+    @abc.abstractmethod
     def define_alternatives(self):
-        self.alternatives = [chr(i + 50) for i in range(DecisionMaker.NUM_ALTERNATIVES)]
+        return  NotImplementedError
 
     def get_estimates_from_experts(self):
         # TODO: make retrieval real
         self.results = [
             [random.choice(self.options) for i in range(len(self.alternatives))]
-            for i in range(DecisionMaker.NUM_EXPERTS)
+            for i in range(Decisioner.NUM_EXPERTS)
             ]
         return self.results
 
+    @abc.abstractmethod
     def two_tuples_decision(self):
-        if not self.estimates_map:
-            self.map_estimates_to_integers()
-        self.matrix = self.make_matrix_two_tuples()
-        res = self.calculate_total_by_alternative()
-        res = sorted(res, reverse=True)
-        return res[0]
+        return  NotImplementedError
 
+    @abc.abstractmethod
     def map_estimates_to_integers(self):
-        assert self.options, "Options should not be empty"
-        for (i, val) in enumerate(self.options):
-            self.estimates_map[val] = i
-            self.estimates_map_reverse[i] = val
+        return  NotImplementedError
 
     def get_map_estimates(self):
         return self.estimates_map
@@ -78,30 +72,10 @@ class DecisionMaker:
             matrix.append(row)
         return matrix
 
+    @abc.abstractmethod
     def calculate_total_by_alternative(self):
-        sum = 0
-        res_dic = {}
-        for row in self.matrix:
-            for (j, val) in enumerate(row):
-                try:
-                    res_dic[j] += self.symbolic_aggregation_operator_reverse(val)
-                except KeyError:
-                    res_dic[j] = self.symbolic_aggregation_operator_reverse(val)
-        res = [self.symbolic_aggregation_operator(j / len(res_dic.keys())) for (i, j) in res_dic.items()]
-        return res
+        return NotImplementedError
 
 
 if __name__ == "__main__":
-    print('Starting to initialize the Decision Maker')
-    maker = DecisionMaker()
-    maker.define_estimate_options()
-    maker.define_alternatives()
-    estimates = maker.get_estimates_from_experts()
-    print("Got estimates from agents: ")
-    print_list(estimates)
-
-    maker.map_estimates_to_integers()
-    print("Mapped estimates: ")
-    print_dictionary(maker.get_map_estimates())
-
-    maker.two_tuples_decision()
+    sys.exit(print("Not available for running in console"))
