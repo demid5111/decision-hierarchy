@@ -90,10 +90,10 @@ class LHDecisionMakerTest(unittest.TestCase):
         self.normalized_matrix = [
             [TwoTuple("good_9_4", 0, 4), TwoTuple("good_9_6", 0, 6), TwoTuple("good_9_3", 0, 3),
              TwoTuple("good_9_5", 0, 5)],
-            [TwoTuple("good_9_5", 0, 5), TwoTuple("good_9_6", 0, 6), TwoTuple("good_9_5", 0, 5),
-             TwoTuple("good_9_5", 0, 5)],
-            [TwoTuple("good_9_5", 0, 5), TwoTuple("good_9_9", 0, 9), TwoTuple("good_9_9", 0, 9),
-             TwoTuple("good_9_5", 0, 5)],
+            [TwoTuple("good_9_6", 0, 6), TwoTuple("good_9_8", 0, 8), TwoTuple("good_9_6", 0, 6),
+             TwoTuple("good_9_6", 0, 6)],
+            [TwoTuple("good_9_4", 0, 4), TwoTuple("good_9_8", 0, 8), TwoTuple("good_9_8", 0, 8),
+             TwoTuple("good_9_4", 0, 4)],
             [TwoTuple("good_9_4", 0, 4), TwoTuple("good_9_5", 0, 5), TwoTuple("good_9_3", 0, 3),
              TwoTuple("good_9_5", 0, 5)]]
 
@@ -106,13 +106,23 @@ class LHDecisionMakerTest(unittest.TestCase):
         self.assertEqual(self.normalized_matrix, self.maker.matrix)
 
     def test_lh_two_tuples_decision_calculate_estimates_by_alternative(self):
-        res = [TwoTuple("good_9_5", -0.5, 5), TwoTuple("good_9_7", 0.25, 7), TwoTuple("good_9_5", 0.25, 5),
-               TwoTuple("good_9_3", 0, 3)]
+        self.maker.matrix = self.maker.make_matrix_two_tuples()
+        self.maker.make_normalized_matrix_two_tuples()
+        res = [TwoTuple("good_9_4", 0.5, 5), TwoTuple("good_9_7", -0.25, 7), TwoTuple("good_9_5", 0, 5),
+               TwoTuple("good_9_5", 0, 5)]
         self.assertEqual(res, self.maker.calculate_total_by_alternative())
 
     def test_lh_two_tuples_decision_final_decision(self):
-        res = TwoTuple("good_9_7", 0.25, 7)
+        self.maker.matrix = self.maker.make_matrix_two_tuples()
+        self.maker.make_normalized_matrix_two_tuples()
+        self.maker.calculate_total_by_alternative()
+        res = TwoTuple("good_9_7", -0.25, 7)
         self.assertEqual(res, self.maker.lh_two_tuple_decision()[0])
+
+    def test_lh_two_tuples_transformation(self):
+        res = TwoTuple("good_5_2", 0.5, 2)
+        test_tuple = TwoTuple("good_9_5", 0, 5)
+        self.assertEqual(res, self.maker.transform_to_level(source_level=9,target_level=5,two_tuple=test_tuple))
 
     def tearDown(self):
         del self.maker
