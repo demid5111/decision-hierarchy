@@ -3,7 +3,7 @@ import random
 import pika
 
 from supporting.primitives import print_list, print_dictionary
-from two_tuple import TwoTuple
+from two_tuple.base.two_tuple import TwoTuple
 
 
 class DecisionMaker:

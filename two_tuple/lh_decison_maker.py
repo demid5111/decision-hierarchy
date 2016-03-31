@@ -7,8 +7,8 @@ from two_tuple.base.two_tuple import TwoTuple
 
 
 class LHDecisionMaker(Decisioner):
-    NUM_EXPERTS = 3
-    NUM_ALTERNATIVES = 3
+    NUM_EXPERTS = 4
+    NUM_ALTERNATIVES = 4
 
     def __init__(self):
         super().__init__()
@@ -18,8 +18,8 @@ class LHDecisionMaker(Decisioner):
 
     def retrieve_sets(self):
         size = 3
-        for i in range(LHDecisionMaker.NUM_EXPERTS):
-            self._linguistic_sets[i] = LinguisticSet(["_".join(["good", str(i), str(j)]) for j in range(size)])
+        for i in range(3):
+            self._linguistic_sets[i] = LinguisticSet(["_".join(["good", str(size), str(j)]) for j in range(size)])
             size = size * 2 - 1
 
     def get_set_id_by_size(self, size):
@@ -32,12 +32,15 @@ class LHDecisionMaker(Decisioner):
     def define_alternatives(self):
         self.alternatives = [chr(i + 50) for i in range(LHDecisionMaker.NUM_ALTERNATIVES)]
 
+    def set_experts_map(self):
+        self.expert_to_set_id = {0: 2,
+                                 1: 1,
+                                 2: 0,
+                                 3: 2}
     def retrieve_estimates(self):
         assert self.alternatives, "Alternatives should be a non empty list"
         # here we have that e.g. expert #1 has set #3
-        self.expert_to_set_id = {0: 2,
-                                 1: 0,
-                                 2: 1}
+        self.set_experts_map()
         for i in self.expert_to_set_id.keys():
             self.results.append(
                     [random.choice(self.linguistic_sets[self.expert_to_set_id[i]].options)
@@ -86,7 +89,7 @@ class LHDecisionMaker(Decisioner):
         # 2. now convert it into the single set which is the best representative
         if not self.best_set:
             self.choose_best_set()
-        self.make_normlized_matrix_two_tuples()
+        self.make_normalized_matrix_two_tuples()
 
         # 3. calculate total average values by alternative
         res = self.calculate_total_by_alternative()
@@ -117,7 +120,7 @@ class LHDecisionMaker(Decisioner):
             k += 1
         return matrix
 
-    def make_normlized_matrix_two_tuples(self):
+    def make_normalized_matrix_two_tuples(self):
         assert self.matrix, "Matrix initial should not be empty"
         for (expert, row) in enumerate(self.matrix):
             for (alternative, ttuple) in enumerate(row):
