@@ -19,11 +19,11 @@ class Decisioner:
 
     @abc.abstractmethod
     def define_estimate_options(self):
-        return NotImplementedError
+        raise NotImplementedError
 
     @abc.abstractmethod
     def define_alternatives(self):
-        return  NotImplementedError
+        raise NotImplementedError
 
     def get_estimates_from_experts(self):
         # TODO: make retrieval real
@@ -35,11 +35,11 @@ class Decisioner:
 
     @abc.abstractmethod
     def two_tuples_decision(self):
-        return  NotImplementedError
+        raise NotImplementedError
 
     @abc.abstractmethod
     def map_estimates_to_integers(self):
-        return  NotImplementedError
+        raise NotImplementedError
 
     def get_map_estimates(self):
         return self.estimates_map
@@ -74,7 +74,7 @@ class Decisioner:
 
     @abc.abstractmethod
     def calculate_total_by_alternative(self):
-        return NotImplementedError
+        raise NotImplementedError
 
 
 if __name__ == "__main__":

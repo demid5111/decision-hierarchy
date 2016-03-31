@@ -22,19 +22,26 @@ class LHDecisionMaker(Decisioner):
             self._linguistic_sets[i] = LinguisticSet(["_".join(["good", str(i), str(j)]) for j in range(size)])
             size = size * 2 - 1
 
+    def get_set_id_by_size(self, size):
+        id = -1
+        for (index, lset) in self.linguistic_sets.items():
+            if lset.size == size:
+                id = index
+        return id
+
     def define_alternatives(self):
         self.alternatives = [chr(i + 50) for i in range(LHDecisionMaker.NUM_ALTERNATIVES)]
 
     def retrieve_estimates(self):
         assert self.alternatives, "Alternatives should be a non empty list"
         # here we have that e.g. expert #1 has set #3
-        self.expert_to_set = {0: 2,
-                              1: 0,
-                              2: 1}
-        self.results = [
-            [random.choice(self.linguistic_sets[self.expert_to_set[i]]) for i in range(len(self.alternatives))]
-            for i in self.expert_to_set.keys()
-            ]
+        self.expert_to_set_id = {0: 2,
+                                 1: 0,
+                                 2: 1}
+        for i in self.expert_to_set_id.keys():
+            self.results.append(
+                    [random.choice(self.linguistic_sets[self.expert_to_set_id[i]].options)
+                     for j in range(len(self.alternatives))])
 
     def choose_best_set(self):
         try:
@@ -42,35 +49,44 @@ class LHDecisionMaker(Decisioner):
         except KeyError:
             raise KeyError
 
-    def symbolic_aggregation_operator(self, number):
+    def symbolic_aggregation_operator(self, number,source_level_size):
         new_num = round(number)
-        if new_num >= len(self.options):
-            raise IndexError
-        term = self.estimates_map_reverse[new_num]
-        alpha = round(number - self.estimates_map[term], 2)
+        term = self.linguistic_set_by_size(source_level_size).estimates_map_reverse[new_num]
+        alpha = round(number - self.linguistic_set_by_size(source_level_size).estimates_map[term], 2)
         return TwoTuple(term=term, alpha=alpha, position=new_num)
 
-    def symbolic_aggregation_operator_reverse(self, two_tuple):
+    def symbolic_aggregation_operator_reverse(self, two_tuple, source_level_size):
         term = two_tuple.get_term()
         alpha = two_tuple.get_alpha()
-        return self.estimates_map[term] + alpha
+        return self.linguistic_set_by_size(source_level_size).estimates_map[term] + alpha
 
     def transform_to_level(self, source_level, target_level, two_tuple):
-        new_num = (self.symbolic_aggregation_operator_reverse(two_tuple) * target_level.size - 1) / (
-            source_level.size - 1)
-        return self.symbolic_aggregation_operator(new_num)
+        if source_level == target_level:
+            return two_tuple
+        else:
+            new_num = (self.symbolic_aggregation_operator_reverse(two_tuple, source_level)
+                       * (self.linguistic_set_by_size(target_level).size - 1)) / (
+                          self.linguistic_set_by_size(source_level).size - 1)
+            return self.symbolic_aggregation_operator(new_num,target_level)
+
+    def translate_ttuple_to_sets(self,two_tuple,source_level_size):
+        res = []
+        for (id,lset) in self.linguistic_sets.items():
+            new_tuple = self.transform_to_level(
+                        source_level_size,
+                        self.linguistic_sets[id].size,
+                        two_tuple)
+            res.append(new_tuple)
+        return res
 
     def lh_two_tuple_decision(self):
-        if not self.estimates_map:
-            self.map_estimates_to_integers()
-
         # 1. first create matrix of 2-tuples from original term sets
         self.matrix = self.make_matrix_two_tuples()
 
         # 2. now convert it into the single set which is the best representative
         if not self.best_set:
             self.choose_best_set()
-        self.matrix = self.make_normlized_matrix_two_tuples()
+        self.make_normlized_matrix_two_tuples()
 
         # 3. calculate total average values by alternative
         res = self.calculate_total_by_alternative()
@@ -80,22 +96,23 @@ class LHDecisionMaker(Decisioner):
 
         # 5. transform the value of best alternatives into the set of understandable values for all experts
         # TODO: add this transformation
-        return res
+        translations = self.translate_ttuple_to_sets(res,self.linguistic_set_by_id(self.best_set).size)
+        return res,translations
 
     def make_matrix_two_tuples(self):
         """
         Initial normalization step
         :return:
         """
-        assert self.expert_to_set, "Experts should have already shared their estimates"
+        assert self.expert_to_set_id, "Experts should have already shared their estimates"
         matrix = []
         k = 0
-        for i in self.expert_to_set.keys():
+        for i in self.expert_to_set_id.keys():
             row = []
             for j in self.results[k]:
                 row.append(
                         TwoTuple(term=j, alpha=0,
-                                 position=self.linguistic_sets[self.expert_to_set[i]].estimates_map[j]))
+                                 position=self.linguistic_sets[self.expert_to_set_id[i]].estimates_map[j]))
             matrix.append(row)
             k += 1
         return matrix
@@ -103,10 +120,23 @@ class LHDecisionMaker(Decisioner):
     def make_normlized_matrix_two_tuples(self):
         assert self.matrix, "Matrix initial should not be empty"
         for (expert, row) in enumerate(self.matrix):
-            for (alternative, ttuple) in row:
-                self.matrix[expert][alternative] = self.transform_to_level(self.linguistic_sets[expert].size,
-                                                                           self.best_set.size,
-                                                                           self.matrix[expert][alternative])
+            for (alternative, ttuple) in enumerate(row):
+                self.matrix[expert][alternative] = self.transform_to_level(
+                        self.linguistic_sets[self.expert_to_set_id[expert]].size,
+                        self.linguistic_sets[self.best_set].size,
+                        self.matrix[expert][alternative])
+
+    def calculate_total_by_alternative(self):
+        sum = 0
+        res_dic = {}
+        for row in self.matrix:
+            for (j, val) in enumerate(row):
+                try:
+                    res_dic[j] += self.symbolic_aggregation_operator_reverse(val, self.linguistic_set_by_id(self.best_set).size)
+                except KeyError:
+                    res_dic[j] = self.symbolic_aggregation_operator_reverse(val, self.linguistic_set_by_id(self.best_set).size)
+        res = [self.symbolic_aggregation_operator(j / len(res_dic.keys()), self.linguistic_set_by_id(self.best_set).size) for (i, j) in res_dic.items()]
+        return res
 
     @property
     def linguistic_sets(self):
@@ -115,6 +145,12 @@ class LHDecisionMaker(Decisioner):
     @property
     def best_set(self):
         return self._best_set
+
+    def linguistic_set_by_id(self, id):
+        return self.linguistic_sets.get(id, None)
+
+    def linguistic_set_by_size(self, size):
+        return self.linguistic_set_by_id(self.get_set_id_by_size(size))
 
 
 if __name__ == '__main__':
@@ -126,7 +162,6 @@ if __name__ == '__main__':
 
     maker.define_alternatives()
     maker.retrieve_estimates()
-    maker.lh_two_tuple_decision()
-
-    print(maker.transform_to_level(maker.linguistic_sets[0], maker.linguistic_sets[maker.best_set],
-                                   TwoTuple("good_1_5", 0, 5)))
+    res,translations = maker.lh_two_tuple_decision()
+    print ("Best option: " + str(res))
+    print ("Its translations: " + str(translations))

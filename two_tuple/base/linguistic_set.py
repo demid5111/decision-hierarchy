@@ -31,6 +31,10 @@ class LinguisticSet:
     def size(self):
         return self._size
 
+    @property
+    def options(self):
+        return self._options
+
     def __str__(self):
         return "<{}>. Size: {}".format(LinguisticSet.__class__.__name__,self._size)
 
