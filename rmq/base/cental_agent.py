@@ -7,7 +7,7 @@ from supporting.mq_constants import MQConstants, Message, Level
 from supporting.primitives import pack_msg_json
 
 
-class DataReceiver:
+class CentralAgent:
     def __init__(self):
         self.CURRENT_MAX_ID = 0
         self.NUM_EXPERTS = 3
@@ -58,7 +58,7 @@ class DataReceiver:
             data = json.loads(body.decode("utf-8") )
             if Message.new_member in method.routing_key:
                 print("Nice to see you, new member. Your number is now: {}!".format(str(self.CURRENT_MAX_ID)))
-                self.readiness[self.CURRENT_MAX_ID] = True
+                # self.readiness[self.CURRENT_MAX_ID] = True
                 data = {Message.new_id: self.CURRENT_MAX_ID}
                 self.CURRENT_MAX_ID += 1
                 self.send_message(message=data)
@@ -125,7 +125,7 @@ class DataReceiver:
 
 if __name__ == '__main__':
     print('In data receiver!')
-    receiver = DataReceiver()
+    receiver = CentralAgent()
     receiver.prepare_readiness_list()
 
     print("Wait until I get enough experts")

@@ -7,7 +7,7 @@ from supporting.mq_constants import MQConstants, Message, Level
 from supporting.primitives import pack_msg_json
 
 
-class DataSender():
+class WorkAgent(object):
     def __init__(self):
         self.connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
         self.channel = self.connection.channel()
@@ -22,7 +22,7 @@ class DataSender():
             self.send_message(message=data, routing_key=Message.new_member)
         else:
             self.ID = int(1)
-            data = {}
+            data = {Message.info:Message.approve_enumeration}
             data[Message.info] = "I am now enumerated. So, check the connection with my routing_key"
             message = pack_msg_json(level=Level.info, body=data)
             self.send_message(message=message, routing_key=self.make_routing_key(" ", "info"))
@@ -36,7 +36,8 @@ class DataSender():
         :param routing_key:
         """
         print("[*] Sending Task: " + str(message))
-
+        if type(message) == str:
+            message = json.loads(message)
         try:
             message[Message.info] = "[{}] {}".format(str(self.ID), message[Message.info])
         except (ValueError, AttributeError,TypeError):
@@ -90,8 +91,16 @@ class DataSender():
             if (data.get(Message.new_id, -1) > -1):
                 self.ID = data.get(Message.new_id, 0)
                 print("Wow, new id: " + str(self.ID))
-                self.channel.stop_consuming()
+
+                data = {Message.info:Message.approve_enumeration}
+                # data[Message.info] = "I am now enumerated. So, check the connection with my routing_key"
+                data["id"] = self.ID
+                message = pack_msg_json(level=Level.info, body=data)
+                self.send_message(message=message, routing_key=self.make_routing_key(" ", "info"))
+
                 self.change_routing_key()
+                self.channel.stop_consuming()
+
             print("In receiving info " + str(data))
         except ValueError:
             if Message.new_id in body:
@@ -159,4 +168,4 @@ class DataSender():
 
 
 if __name__ == '__main__':
-    sender = DataSender()
+    sender = WorkAgent()

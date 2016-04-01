@@ -9,16 +9,18 @@ from two_tuple.base.two_tuple import TwoTuple
 class LHDecisionMaker(Decisioner):
     NUM_EXPERTS = 4
     NUM_ALTERNATIVES = 4
+    NUM_SETS = 6
 
     def __init__(self):
         super().__init__()
         self._linguistic_sets = {}
         self._best_set = -1
-        self.results = []
+        self.results = {}
+        self.expert_to_set_id = {}
 
     def retrieve_sets(self):
         size = 3
-        for i in range(3):
+        for i in range(LHDecisionMaker.NUM_SETS):
             self._linguistic_sets[i] = LinguisticSet(["_".join(["good", str(size), str(j)]) for j in range(size)])
             size = size * 2 - 1
 
@@ -42,9 +44,8 @@ class LHDecisionMaker(Decisioner):
         # here we have that e.g. expert #1 has set #3
         self.set_experts_map()
         for i in self.expert_to_set_id.keys():
-            self.results.append(
-                    [random.choice(self.linguistic_sets[self.expert_to_set_id[i]].options)
-                     for j in range(len(self.alternatives))])
+            self.results[i] = [random.choice(self.linguistic_sets[self.expert_to_set_id[i]].options)
+                     for j in range(len(self.alternatives))]
 
     def choose_best_set(self):
         try:
@@ -73,13 +74,16 @@ class LHDecisionMaker(Decisioner):
             return self.symbolic_aggregation_operator(new_num,target_level)
 
     def translate_ttuple_to_sets(self,two_tuple,source_level_size):
-        res = []
-        for (id,lset) in self.linguistic_sets.items():
-            new_tuple = self.transform_to_level(
-                        source_level_size,
-                        self.linguistic_sets[id].size,
-                        two_tuple)
-            res.append(new_tuple)
+        res = {}
+        for (set_id,lset) in self.linguistic_sets.items():
+            if source_level_size != self.linguistic_sets[set_id].size:
+                new_tuple = self.transform_to_level(
+                            source_level_size,
+                            self.linguistic_sets[set_id].size,
+                            two_tuple)
+                res[set_id] = new_tuple
+            else:
+                res[set_id] = two_tuple
         return res
 
     def lh_two_tuple_decision(self):
@@ -94,13 +98,15 @@ class LHDecisionMaker(Decisioner):
         # 3. calculate total average values by alternative
         res = self.calculate_total_by_alternative()
 
+        index = res.index(max(res))
+
         # 4. choose best alternative so far
         res = sorted(res, reverse=True)[0]
 
         # 5. transform the value of best alternatives into the set of understandable values for all experts
         # TODO: add this transformation
         translations = self.translate_ttuple_to_sets(res,self.linguistic_set_by_id(self.best_set).size)
-        return res,translations
+        return res,index,translations
 
     def make_matrix_two_tuples(self):
         """

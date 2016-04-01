@@ -1,4 +1,4 @@
-class MQConstants():
+class MQConstants:
     localhost = "localhost"
     fanout = "fanout"
     data_back_flow = "data_back_flow"
@@ -11,12 +11,24 @@ class MQConstants():
     key_all_full_messages = "*.*.*"
     message_key = "msg"
 
-class Message():
+class Message:
+    satisfaction = "satisfaction"
+    best_alternative = "best_alternative"
+    best_alternative_id = "best_alternative_id"
+    approve_enumeration = "approve_enumeration"
+    linguistic_set_size = "linguistic_set_size"
+    data = "data"
     kill_everyone = None
     info = "info"
     new_member = "new_member"
     new_id = "new_id"
 
-class Level():
+class Level:
     info = "info"
     report = "report"
+
+class Task:
+    finish_game = "finish_game"
+    set_community_best = "set_community_best"
+    get_estimates = "get_estimates"
+    set_options = "set_options"
