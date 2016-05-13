@@ -1,10 +1,16 @@
-import json
-
+__author__ = "Demidovskij Alexander"
+__copyright__ = "Copyright 2016, ML-MA-LDM Project"
+__license__ = "GPL"
+__version__ = "1.0.0"
+__email__ = "monadv@yandex.ru"
+__status__ = "Development"
 
 class TwoTuple:
+    """ Class TwoTuple is the implementation of the 2-tuple linguistic value
+    """
     def __init__(self, term, alpha, position):
-        self.term = term
-        self.alpha = alpha
+        self.term = term    # term is the word
+        self.alpha = alpha  # alpha is the translation delta
         self.position = position
 
     def get_term(self):
@@ -47,6 +53,10 @@ class TwoTuple:
         return "<<TwoTuple>: term={},alpha={}>".format(self.term, self.alpha)
 
     def __gt__(self, other):
+        """ Check if the given 2-tuple is greater than the second 2-tuple
+        :param other: 2-tuple to compare with
+        :return: boolean
+        """
         if self.position > other.position:
             return True
         elif self.position < other.position:

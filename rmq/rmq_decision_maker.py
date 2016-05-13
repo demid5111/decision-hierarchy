@@ -1,8 +1,14 @@
+__author__ = "Demidovskij Alexander"
+__copyright__ = "Copyright 2016, ML-MA-LDM Project"
+__license__ = "GPL"
+__version__ = "1.0.0"
+__email__ = "monadv@yandex.ru"
+__status__ = "Development"
+
 import json
 import os
 
 import pika
-import sys
 
 from rmq.base.cental_agent import CentralAgent
 from supporting.mq_constants import MQConstants, Message, Task
@@ -11,6 +17,9 @@ from two_tuple.lh_decison_maker import LHDecisionMaker
 
 
 class RMQDecisionMaker(CentralAgent):
+    """ Class RMQDecisionMaker is the implmentation of the coordinator, who asks experts to share estimates and who
+    agregates information, chooses the best alternative and communicates the results"
+    """
     def __init__(self):
         super().__init__()
         self._desicion_maker = LHDecisionMaker()

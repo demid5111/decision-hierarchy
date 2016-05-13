@@ -1,3 +1,10 @@
+__author__ = "Demidovskij Alexander"
+__copyright__ = "Copyright 2016, ML-MA-LDM Project"
+__license__ = "GPL"
+__version__ = "1.0.0"
+__email__ = "monadv@yandex.ru"
+__status__ = "Development"
+
 import abc
 import random
 import sys
@@ -5,6 +12,9 @@ from .two_tuple import TwoTuple
 
 
 class Decisioner:
+    """ Class Decisioner is the base class for the linguistic information agregation management.
+    To use it, it is required to derive and implement abstract methods.
+    """
     NUM_ALTERNATIVES = 4
     NUM_EXPERTS = 4
 

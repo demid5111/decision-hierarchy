@@ -1,4 +1,13 @@
+__author__ = "Demidovskij Alexander"
+__copyright__ = "Copyright 2016, ML-MA-LDM Project"
+__license__ = "GPL"
+__version__ = "1.0.0"
+__email__ = "monadv@yandex.ru"
+__status__ = "Development"
+
 class MQConstants:
+    """ Class MQConstants defines the string values for the RMQ-specific properties like:
+     names of queues, keys for msg etc."""
     localhost = "localhost"
     fanout = "fanout"
     data_back_flow = "data_back_flow"
@@ -12,6 +21,7 @@ class MQConstants:
     message_key = "msg"
 
 class Message:
+    """ Class Message defines the message set that Experts and Coordinator can exchange to perform a particular task"""
     satisfaction = "satisfaction"
     best_alternative = "best_alternative"
     best_alternative_id = "best_alternative_id"
@@ -24,10 +34,12 @@ class Message:
     new_id = "new_id"
 
 class Level:
+    """ Class Level defines the verbosity of the message being exchanged"""
     info = "info"
     report = "report"
 
 class Task:
+    """Class Task defines task names for Experts to perform"""
     finish_game = "finish_game"
     set_community_best = "set_community_best"
     get_estimates = "get_estimates"

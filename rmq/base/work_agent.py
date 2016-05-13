@@ -1,3 +1,10 @@
+__author__ = "Demidovskij Alexander"
+__copyright__ = "Copyright 2016, ML-MA-LDM Project"
+__license__ = "GPL"
+__version__ = "1.0.0"
+__email__ = "monadv@yandex.ru"
+__status__ = "Development"
+
 import json
 import sys
 
@@ -8,6 +15,9 @@ from supporting.primitives import pack_msg_json
 
 
 class WorkAgent(object):
+    """ Class WorkAgent is base class for workers/agents/experts.
+    It gets messages by fanout and sends direct ones to the coordinator
+    """
     def __init__(self):
         self.connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
         self.channel = self.connection.channel()

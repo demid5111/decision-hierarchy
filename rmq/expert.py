@@ -1,3 +1,10 @@
+__author__ = "Demidovskij Alexander"
+__copyright__ = "Copyright 2016, ML-MA-LDM Project"
+__license__ = "GPL"
+__version__ = "1.0.0"
+__email__ = "monadv@yandex.ru"
+__status__ = "Development"
+
 import json
 import random
 
@@ -13,6 +20,8 @@ from two_tuple.base.two_tuple import TwoTuple
 
 
 class Expert(WorkAgent):
+    """ Class Expert is the implementation of the expert who gives linguistic and numeric estimates.
+    """
     NUM_SETS = 6
 
     def __init__(self, name):

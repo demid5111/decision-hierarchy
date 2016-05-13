@@ -1,3 +1,10 @@
+__author__ = "Demidovskij Alexander"
+__copyright__ = "Copyright 2016, ML-MA-LDM Project"
+__license__ = "GPL"
+__version__ = "1.0.0"
+__email__ = "monadv@yandex.ru"
+__status__ = "Development"
+
 import unittest
 
 from two_tuple.base.two_tuple import TwoTuple
@@ -73,10 +80,10 @@ class LHDecisionMakerTest(unittest.TestCase):
         self.maker.retrieve_sets()
         self.maker.set_experts_map()
         self.maker.choose_best_set()
-        self.maker.results = [["good_9_4", "good_9_6", "good_9_3", "good_9_5"],
-                              ["good_5_3", "good_5_4", "good_5_3", "good_5_3"],
-                              ["good_3_1", "good_3_2", "good_3_2", "good_3_1"],
-                              ["good_9_4", "good_9_5", "good_9_3", "good_9_5"]]
+        self.maker.results = {0:["good_9_4", "good_9_6", "good_9_3", "good_9_5"],
+                              1:["good_5_3", "good_5_4", "good_5_3", "good_5_3"],
+                              2:["good_3_1", "good_3_2", "good_3_2", "good_3_1"],
+                              3:["good_9_4", "good_9_5", "good_9_3", "good_9_5"]}
         self.matrix = [
             [TwoTuple("good_9_4", 0, 4), TwoTuple("good_9_6", 0, 6), TwoTuple("good_9_3", 0, 3),
              TwoTuple("good_9_5", 0, 5)],

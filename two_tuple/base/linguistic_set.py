@@ -1,14 +1,23 @@
+__author__ = "Demidovskij Alexander"
+__copyright__ = "Copyright 2016, ML-MA-LDM Project"
+__license__ = "GPL"
+__version__ = "1.0.0"
+__email__ = "monadv@yandex.ru"
+__status__ = "Development"
+
 from supporting.ttuple_exceptions import OptionsListEmptyError
 
 
 class LinguisticSet:
+    """ Class LinguisticSet is the implementation of the linguistic set of terms used for estimation
+    """
     def __init__(self, options=None):
         if not options:
             raise OptionsListEmptyError
         self._options = options
         self._size = len(self._options)
-        self._estimates_map = {}
-        self._estimates_map_reverse = {}
+        self._estimates_map = {} # term -> position
+        self._estimates_map_reverse = {} # position -> term
         self.__map_estimates_to_integers()
 
     def __map_estimates_to_integers(self):

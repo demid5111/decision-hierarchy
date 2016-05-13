@@ -1,3 +1,10 @@
+__author__ = "Demidovskij Alexander"
+__copyright__ = "Copyright 2016, ML-MA-LDM Project"
+__license__ = "GPL"
+__version__ = "1.0.0"
+__email__ = "monadv@yandex.ru"
+__status__ = "Development"
+
 import random
 
 from supporting.primitives import print_list, print_dictionary
@@ -7,6 +14,9 @@ from two_tuple.base.two_tuple import TwoTuple
 
 
 class LHDecisionMaker(Decisioner):
+    """ Class LHDecisionMaker implements agregation of the linguistic estimates from the differene levels of linguistic
+    hierarchy.
+    """
     NUM_EXPERTS = 4
     NUM_ALTERNATIVES = 4
     NUM_SETS = 6

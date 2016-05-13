@@ -1,3 +1,10 @@
+__author__ = "Demidovskij Alexander"
+__copyright__ = "Copyright 2016, ML-MA-LDM Project"
+__license__ = "GPL"
+__version__ = "1.0.0"
+__email__ = "monadv@yandex.ru"
+__status__ = "Development"
+
 import json
 import threading
 
@@ -8,6 +15,9 @@ from supporting.primitives import pack_msg_json
 
 
 class CentralAgent:
+    """ Class CentralAgent is base class for the coordinator, who manipulates other workers/agents/experts.
+    It sends messages by fanout and gets direct ones
+    """
     def __init__(self):
         self.CURRENT_MAX_ID = 0
         self.NUM_EXPERTS = 3
